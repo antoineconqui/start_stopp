@@ -1,0 +1,51 @@
+name: start_stopp
+description: A new Flutter project.
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.1.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^0.1.2
+  firebase_core: ^0.4.0+3
+  cloud_firestore: ^0.12.5
+  # firebase_database: ^3.0.2
+  google_sign_in: ^4.0.2
+  firebase_auth: ^0.11.1+6
+  # shared_preferences: ^0.5.3+1
+  # flutter_secure_storage: ^3.2.1+1
+  flutter_launcher_icons: ^0.7.2
+  flutter_auth_buttons: ^0.5.0
+  # flutter_facebook_login: ^2.0.1
+  image_picker:
+  mlkit:
+  # sync_http:
+  # xml:
+  # html:
+  http:
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter_icons:
+  image_path: "assets/launcher/drug.png"
+  # image_path_android: "assets/launcher/drug.png"
+  android: true
+  # image_path_ios: "assets/launcher/drug.png"
+  os: true
+  
+flutter:
+  uses-material-design: true
+  assets:
+   - assets/launcher/drug.png
+  fonts:
+    - family: OpenSans
+      fonts:
+        - asset: fonts/OpenSans-Regular.ttf
+    - family: Roboto
+      fonts:
+        - asset: fonts/Roboto-Regular.ttf
