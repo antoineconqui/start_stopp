@@ -1,6 +1,6 @@
 # start_stopp
 
-A new Flutter project.
+Il s'agit d'une application qui scanne une ordonnance et en retire les médicaments avec les critères STOPP correspondants.
 
 ## Getting Started
 

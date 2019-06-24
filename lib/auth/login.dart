@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
 import 'authentication.dart';
-import '../pages/home.dart';
 
 class Login extends StatefulWidget {
   final Auth auth;
   final VoidCallback onSignedIn;
-  // final VoidCallback onSignedOut;
 
   Login({this.auth, this.onSignedIn});
 
@@ -18,6 +16,10 @@ class LoginState extends State<Login> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String _errorMessage;
   bool _isIos;
+  bool _isLoading = false;
+  static Color bleuC = Color(0xFF74b9ff);
+  static Color bleuF = Color(0xFF4da6ff);
+  
 
   @override
   void initState() {
@@ -28,10 +30,9 @@ class LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     _isIos = Theme.of(context).platform == TargetPlatform.iOS;
+    if(_isLoading)
+      return buildWaitingScreen();
     return Scaffold(
-      appBar: AppBar(
-        title: Center(child: Text('Connexion')),
-      ),
       body: Stack(
         children: <Widget>[
           Container(
@@ -43,64 +44,83 @@ class LoginState extends State<Login> {
           ),
         ],
       ),
+      backgroundColor: bleuC,
     );
   }
 
   List<Widget> _buildBody() {
     return <Widget>[
       Padding(
-          padding: EdgeInsets.fromLTRB(0.0, 50.0, 0.0, 0.0),
-          child: Image(
-            image: AssetImage('assets/launcher/drug.png'),
-            height: 100,
-            width: 100,
-          )),
-      Padding(
-          padding: const EdgeInsets.fromLTRB(0.0, 50.0, 0.0, 0.0),
-          child: Center(
-            child: Text(
-              'Veuillez vous connecter pour utiliser l\'application',
-              textAlign: TextAlign.center,
+        padding: EdgeInsets.fromLTRB(0.0, 150.0, 0.0, 50.0),
+        child: Container(
+          margin: EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.symmetric(vertical: 20),
+          decoration: BoxDecoration(
+            border: Border.all(
+              width: 1,
+              color: Colors.white,
             ),
-          )),
-      Padding(
-          padding: const EdgeInsets.fromLTRB(60.0, 50.0, 60.0, 0.0),
+            borderRadius: BorderRadius.circular(20),
+            color: bleuF
+          ),
           child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                GoogleSignInButton(onPressed: _googleAuth),
-              ])),
+            children: <Widget>[
+              Image(
+                image: AssetImage('assets/launcher/drug.png'),
+                height: 100,
+                width: 100,
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
+              ),
+              Center(
+                child: Text(
+                  'Start & Stopp Scanner',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 30.0,
+                    fontFamily: 'OpenSans'
+                  )
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       Padding(
-          padding: EdgeInsets.fromLTRB(60.0, 45.0, 60.0, 0.0),
-          child: SizedBox(
-            height: 40.0,
-            child: RaisedButton(
-              elevation: 5.0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0)),
-              color: Colors.blue,
-              child: Text('To The App',
-                  style: TextStyle(fontSize: 20.0, color: Colors.white)),
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => HomePage(auth: Auth())));
-              },
-            ),
-          )),
+        padding: const EdgeInsets.fromLTRB(60.0, 30.0, 60.0, 0.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            GoogleSignInButton(onPressed: _googleAuth),
+          ]
+        )
+      ),
     ];
+  }
+
+  Widget buildWaitingScreen() {
+    return Scaffold(
+      body: Container(
+        alignment: Alignment.center,
+        child: CircularProgressIndicator(),
+      ),
+    );
   }
 
   Future<void> _googleAuth() async {
     setState(() {
       _errorMessage = "";
+      _isLoading = true;
     });
     try {
       await widget.auth.googleSignIn();
       widget.onSignedIn();
-      // Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage(auth: widget.auth)));
-    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      } catch (e) {
       print('Error: $e');
       setState(() {
         if (_isIos) {
@@ -110,4 +130,5 @@ class LoginState extends State<Login> {
       });
     }
   }
+
 }
