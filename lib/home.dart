@@ -1,25 +1,15 @@
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mlkit/mlkit.dart';
-import 'package:http/http.dart';
-import '../auth/authentication.dart';
 
 class HomePage extends StatefulWidget {
-  // final Auth auth;
-  // final FirebaseUser user;
-  // final VoidCallback onSignedOut;
-
-  // HomePage({this.auth, this.user, this.onSignedOut});
-
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin{
-  String _name = '';
   static Color bleuC = Color(0xFF74b9ff);
   static Color bleuF = Color(0xFF4da6ff);
   File _image;
@@ -35,13 +25,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       textAlign: TextAlign.center,
     );
   bool _olderThan65 = false;
-
-  @override
-  initState(){
-    // _name = widget.user.displayName;
-    _name = 'Antoine Conqui';
-    super.initState();
-  }
 
   @override
   Widget build(context) {
@@ -78,66 +61,47 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 height: 1,
               ),
               ListTile(
-                leading: Icon(Icons.add_a_photo, color: bleuF),
-                title: Text(
-                  'Scan',
-                  style: Theme.of(context).textTheme.subtitle,
-                ),
-                onTap: () {
-                  Navigator.pop(context, MaterialPageRoute(builder: (context) => HomePage()));//auth: widget.auth, user: widget.user, onSignedOut: widget.onSignedOut)));
-                },
-              ),
-              Divider(
-                height: 1,
-              ),
-              ExpansionTile(
-                leading: Icon(Icons.account_circle, color: bleuF,),
-                title: Text(
-                  'Compte',
-                  style: Theme.of(context).textTheme.subtitle,
-                ),
-                children: <Widget>[
-                  Text(
-                    _name,
-                    style: TextStyle(
-                      color: bleuF,
-                      fontSize: 18
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  Container(height: 10,),
-                  MaterialButton(
-                      color: Colors.red,
-                      textColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      child: Text('Déconnexion'),
-                      onPressed: _signOut,
-                    )
-                ],
-              ),
-              ListTile(
-                leading: Icon(Icons.settings, color: bleuF),
-                title: Text(
-                  'Paramètres',
-                  style: Theme.of(context).textTheme.subtitle,
-                ),
-                onTap: () {
-                  // Navigator.pop(context, MaterialPageRoute(builder: (context) => LoginPage()));
-                },
-              ),
-              ListTile(
                 leading: Icon(Icons.help, color: bleuF),
                 title: Text(
                   'Aide et commentaires',
                   style: Theme.of(context).textTheme.subtitle,
                 ),
                 onTap: () {
-                  // Navigator.pop(context, MaterialPageRoute(builder: (context) => CategoriesPage()));
+                  return showDialog(
+                    context: context,
+                    builder: (BuildContext context){
+                      return AlertDialog(
+                        title: Text("Contacter le développeur"),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children:[
+                            Text(
+                              "N'hésitez pas à me contacter pour toutes questions ou commentaires concernant l'utilisation ou le développement de l'application.\n",
+                              textAlign: TextAlign.justify,
+                            ),
+                            Text(
+                              "antoineconqui@gmail.com",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: bleuF)
+                            ),
+                          ],
+                        ),
+                        actions: <Widget>[
+                          FlatButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text(
+                              "Ok",
+                              style: TextStyle(fontSize: 20),
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+                  );
                 },
               ),
-            ]
-          ,),
-
+            ],
+          ),
         ),
         appBar: AppBar(
           backgroundColor: bleuC,
@@ -234,7 +198,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                               _textDetected = await textDetector.detectFromPath(_image?.path);
                               _drugs = [];
                               try {
-                                List<Drug> drugs = await extractDrugs();
+                                List<Drug> drugs = await getDrugs
+                            ();
                                 setState(() {
                                   _drugs = drugs;
                                   if(_drugs.length == 0)
@@ -342,7 +307,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
           child: Text(
-          firstUpper(drug.stopp),
+          drug.stopp[0].toUpperCase()+drug.stopp.substring(1).toLowerCase(),
           style: TextStyle(
             color: Colors.red,
             fontSize: 15.0
@@ -368,7 +333,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     return drug;
   }
 
-  Future<List<Drug>> extractDrugs() async {
+  Future<List<Drug>> getDrugs() async {
     List<Drug> drugs = [];
     RegExp reg = RegExp(r'0|1|2|3|4|5|6|7|8|9|\(|\)|\*|\.');
     for (VisionText block in _textDetected)
@@ -376,100 +341,33 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         for (String word in line.split(RegExp(r" |/"))){
           Drug drug = await getDrug(word.toUpperCase());
           if(drug == null && word.length > 3 && reg.allMatches(word).length==0){
-            String drugName = await isADrug(word);
-            if(drugName != null)
-              drug = Drug(eachfirstUpper(drugName),'','');
+            if(word == word.toUpperCase())
+              drug = Drug(eachfirstUpper(word),'','');
           }
           if(drug!=null && !drugs.contains(drug))
             drugs.add(drug);
         }
-    print(drugs);
     return drugs;
   }
 
-  Future<String> isADrug(String word) async {
-    if(word == word.toUpperCase())
-      return word;
-    return null;
+  dialog(BuildContext context){
+    
   }
-
-  // Future<String> isADrug(String word) async {
-  //   String rep = await read('https://rxnav.nlm.nih.gov/REST/approximateTerm?term='+word);
-  //   List<String> candidates = rep.split("candidate");
-  //   if(candidates.length > 1){
-  //     String score = candidates[1].split("score")[1];
-  //     String rxcui = candidates[1].split("rxcui")[1];
-  //     if(int.parse(score.substring(1,score.length-2))==100){
-  //       int id = int.parse(rxcui.substring(1,rxcui.length-2));
-  //       String drugName = await read('https://rxnav.nlm.nih.gov/REST/RxTerms/rxcui/'+id.toString()+'/name');
-  //       drugName = drugName.split('displayName')[1];
-  //       if(drugName.length>3)
-  //         return drugName.substring(1,drugName.length-2).toUpperCase();
-  //       else
-  //         return word;
-  //     }
-  //   }
-  //   return null;
-  // }
-
-  // Future<List<Interaction>> extractDetails(id) async {
-  //   List<Interaction> interactions = List<Interaction>();
-  //   String rep = await read('https://rxnav.nlm.nih.gov/REST/interaction/interaction.json?rxcui='+id.toString()+'&sources=ONCHigh');
-  //   dynamic pairs = jsonDecode(rep)['interactionTypeGroup'];
-  //   if(pairs==null){
-  //     return interactions;
-  //   }
-  //   else{
-  //     pairs = pairs[0]['interactionType'][0]['interactionPair'];
-  //     for (dynamic pair in pairs) {
-  //       print(pair['interactionConcept'][1]['minConceptItem']['rxcui']);
-  //       print(pair['severity']);
-  //       print(pair['description']);
-
-  //       interactions.add(Interaction(pair['interactionConcept'][1]['rxcui'],pair['severity'],pair['description']));
-  //     }
-  //     return interactions;
-  //   }
-  // }
 
   String eachfirstUpper(String string){
     List<String> list = [];
     string.split(' ').forEach((word) {
-      list.add(firstUpper(word));
+      list.add(word[0].toUpperCase()+word.substring(1).toLowerCase());
     });
     return list.join(' ');
   }
-
-  String firstUpper(String string){
-    return string[0].toUpperCase()+string.substring(1).toLowerCase();
-  }
-  
-  _signOut() async {
-    try {
-      // await widget.auth.signOut();
-      // widget.onSignedOut();
-    } catch (e) {
-      print(e);
-    }
-  }
-
-
 }
 
 class Drug {
   String name;
   String category;
   String stopp;
-  // List<Interaction> interactions;
 
-  Drug(this.name, this.category, this.stopp);//,interactions);
+  Drug(this.name, this.category, this.stopp);
   Drug.fromMap(map) : name = map['name'], category = map['category'];
 }
-
-// class Interaction {
-//   Drug drug;
-//   String severity;
-//   String description;
-
-//   Interaction(this.drug, this.severity, this.description);
-// }

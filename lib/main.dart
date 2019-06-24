@@ -1,8 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:start_stopp/pages/home.dart';
-import 'root.dart';
-import 'auth/authentication.dart';
+import 'home.dart';
 
 main() => runApp(MyApp());
 
@@ -31,7 +29,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: RootPage(auth: Auth()),
+      home: HomePage(),
     );
   }
 }
