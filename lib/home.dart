@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mlkit/mlkit.dart';
+import 'start.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -61,6 +62,42 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 height: 1,
               ),
               ListTile(
+                leading: Icon(Icons.error_outline, color: Colors.red),
+                title: Text(
+                  'Scanner d\'Ordonnance',
+                  style: Theme.of(context).textTheme.subtitle,
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    new MaterialPageRoute(
+                      builder: (context) => new HomePage()
+                    ),
+                  );
+                },
+              ),
+              Divider(
+                height: 1,
+              ),
+              ListTile(
+                leading: Icon(Icons.check_circle, color: Colors.green),
+                title: Text(
+                  'Sélecteur de Symptômes',
+                  style: Theme.of(context).textTheme.subtitle,
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    new MaterialPageRoute(
+                      builder: (context) => new StartPage()
+                    ),
+                  );
+                },
+              ),
+              Divider(
+                height: 1,
+              ),
+              ListTile(
                 leading: Icon(Icons.help, color: bleuF),
                 title: Text(
                   'Aide et commentaires',
@@ -107,7 +144,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           backgroundColor: bleuC,
           centerTitle: true,
           title: Text(
-            'Scanner Ordonnance ',
+            'Scanner d\'Ordonnance',
             style: TextStyle(
               fontSize: 25,
               fontFamily: 'OpenSans',
@@ -121,7 +158,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             ),
           ],
         ),
-        body: _buildBody(),
+        body: _buildBodyStop(),
         floatingActionButton: Container(
           height: 200,
           child: Stack(
@@ -187,8 +224,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         heroTag: 'photo',
                         onPressed: () async {
                           try {
-                            _image = await ImagePicker.pickImage(source: ImageSource.camera);
-                            // _image = await ImagePicker.pickImage(source: ImageSource.gallery);
+                            //_image = await ImagePicker.pickImage(source: ImageSource.camera);
+                            _image = await ImagePicker.pickImage(source: ImageSource.gallery);
                             setState(() {
                               _widget = CircularProgressIndicator(
                                 valueColor: AlwaysStoppedAnimation<Color>(bleuF),
@@ -231,7 +268,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildBody(){
+  Widget _buildBodyStop(){
     return Container(
       child: Column(
         children: <Widget>[
