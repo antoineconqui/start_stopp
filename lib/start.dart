@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'home.dart';
+import 'stopp.dart';
 
 class StartPage extends StatefulWidget {
   @override
@@ -11,9 +11,11 @@ class _StartPageState extends State<StartPage> with SingleTickerProviderStateMix
   static Color bleuC = Color(0xFF74b9ff);
   static Color bleuF = Color(0xFF4da6ff);
   Symptome _selectedSymptome;
+  
+  List<bool> _checked;
   List<Symptome> symptomesList = [
-    new Symptome('Douleurs au ventre', <Drug>[new Drug('Vitamine C')]),
-    new Symptome('Chute de tension', <Drug>[new Drug('Ketamine')]),
+    new Symptome('Douleurs au ventre', <Drug>[Drug('Vitamine C'),Drug('Vitamine D'),Drug('Vitamine E'),Drug('Vitamine F')]),
+    new Symptome('Chute de tension', <Drug>[Drug('Ketamine')]),
   ];
   List<Drug> _drugs = [];
   Widget _widget = Text(
@@ -69,7 +71,7 @@ class _StartPageState extends State<StartPage> with SingleTickerProviderStateMix
                   Navigator.push(
                     context,
                     new MaterialPageRoute(
-                      builder: (context) => new HomePage()
+                      builder: (context) => new StoppPage()
                     ),
                   );
                 },
@@ -144,7 +146,7 @@ class _StartPageState extends State<StartPage> with SingleTickerProviderStateMix
           title: Text(
             'Sélecteur de Symptômes',
             style: TextStyle(
-              fontSize: 25,
+              fontSize: 23,
               fontFamily: 'OpenSans',
               color: Colors.white,
             ),
@@ -206,22 +208,31 @@ class _StartPageState extends State<StartPage> with SingleTickerProviderStateMix
       child: Column(
         children: <Widget>[
           Center(
-            child: new DropdownButton<Symptome>(
-              value: _selectedSymptome,
-              items: symptomesList.map((Symptome symptome) {
-                return new DropdownMenuItem<Symptome>(
-                  value: symptome,
-                  child: new Text(symptome.name),
-                );
-              }).toList(),
-              onChanged: (Symptome symptome) {
-                setState(() {
-                  _selectedSymptome = symptome;
-                  _drugs = symptome.drugsToGive;
-                });
-              },
-              hint: Text('Choisissez un symptôme'),
-            )
+            child: DropdownButtonHideUnderline(
+              child:  DropdownButton<Symptome>(
+                value: _selectedSymptome,
+                items: symptomesList.map((Symptome symptome) {
+                  return DropdownMenuItem<Symptome>(
+                    value: symptome,
+                    child: Center(child:Text(symptome.name)),
+                  );
+                }).toList(),
+                onChanged: (Symptome symptome) {
+                  setState(() {
+                    _selectedSymptome = symptome;
+                    _checked = List.filled(_selectedSymptome.drugsToGive.length, false);
+                    _drugs = symptome.drugsToGive;
+                  });
+                },
+                hint: Center(child:Text('Choisissez un symptôme')),
+                isExpanded: true,
+                // isDense: true,
+              ),
+            ),
+          ),
+          Divider(
+            color: bleuF,
+            thickness: 2,
           ),
           _buildList(),
         ],
@@ -238,49 +249,75 @@ class _StartPageState extends State<StartPage> with SingleTickerProviderStateMix
           ),
         ),
       );
-    return Expanded(
-      child:Column(
-        children: <Widget>[
-          Center(
-            child: Text(
-              _selectedSymptome.name,
-              style: TextStyle(
-                fontSize: 36 
-              ),
-            ),
-          ),
-          Expanded(
-            child: Container(
-              child: ListView.separated(
-                separatorBuilder: (context, index) => Divider(
-                  color: bleuF,
+    return Container(
+        height: 300,
+        child: Card(
+          elevation: 3,
+          margin: EdgeInsets.all(30),
+          child:Column(
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.all(10),
+                child: Text(
+                  _selectedSymptome.name,
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontFamily: 'OpenSans'
+                  ),
                 ),
-                padding: const EdgeInsets.all(1.0),
-                itemCount: _drugs.length,
-                itemBuilder: (context, i) {
-                  return _buildRow(_drugs[i]);
-              }),
-            ),
+              ),
+              Container(
+                width: double.infinity,
+                  padding: EdgeInsets.only(left: 30),
+                  child : Text(
+                      'Médicaments à prescrire :',
+                      style: TextStyle(
+                        fontSize: 20,
+                        decoration: TextDecoration.underline,
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+              ),
+              
+              Expanded(
+                child: Container(
+                  margin: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: bleuF)
+                  ),
+                  child: ListView.separated(
+                    separatorBuilder: (context, index) => Divider(
+                      color: bleuF,
+                    ),
+                    padding: const EdgeInsets.all(1.0),
+                    itemCount: _drugs.length,
+                    itemBuilder: (context, i) {
+                      return _buildRow(_drugs[i], i);
+                  }),
+                ),
+              ),
+            ]
           ),
-        ]
-      )
+        )
     );
   }
 
-  Widget _buildRow(drug) {
+  Widget _buildRow(drug, i) {
+    
       return ListTile(
-        leading: Icon(
-          Icons.check,
-          color: Colors.green,
+        leading: Checkbox(
+          value: _checked[i],
+          onChanged: (context){
+            setState( () {
+              _checked[i] = !_checked[i];
+            });
+          },
         ),
-        title: Padding(
-          padding: EdgeInsets.fromLTRB(40.0,0.0,0.0,0.0),
-          child: Text(
+        title: Text(
             drug.name,
             style: Theme.of(context).textTheme.body1,
             textAlign: TextAlign.left,
           ),
-        ),
       );
   }
 

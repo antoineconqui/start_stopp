@@ -5,12 +5,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mlkit/mlkit.dart';
 import 'start.dart';
 
-class HomePage extends StatefulWidget {
+class StoppPage extends StatefulWidget {
   @override
-  _HomePageState createState() => _HomePageState();
+  _StoppPageState createState() => _StoppPageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin{
+class _StoppPageState extends State<StoppPage> with SingleTickerProviderStateMixin{
   static Color bleuC = Color(0xFF74b9ff);
   static Color bleuF = Color(0xFF4da6ff);
   File _image;
@@ -71,7 +71,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   Navigator.push(
                     context,
                     new MaterialPageRoute(
-                      builder: (context) => new HomePage()
+                      builder: (context) => new StoppPage()
                     ),
                   );
                 },
@@ -224,8 +224,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         heroTag: 'photo',
                         onPressed: () async {
                           try {
-                            //_image = await ImagePicker.pickImage(source: ImageSource.camera);
-                            _image = await ImagePicker.pickImage(source: ImageSource.gallery);
+                            _image = await ImagePicker.pickImage(source: ImageSource.camera);
+                            //_image = await ImagePicker.pickImage(source: ImageSource.gallery);
                             setState(() {
                               _widget = CircularProgressIndicator(
                                 valueColor: AlwaysStoppedAnimation<Color>(bleuF),
