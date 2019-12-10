@@ -10,6 +10,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     Color bleuF = Color(0xFF4da6ff);
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Start & Stopp App',
       theme: ThemeData(
         primaryColor: bleuF,

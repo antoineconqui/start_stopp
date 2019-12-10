@@ -30,6 +30,7 @@ class _StoppPageState extends State<StoppPage> with SingleTickerProviderStateMix
   @override
   Widget build(context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         drawer: Drawer(
           child: ListView(

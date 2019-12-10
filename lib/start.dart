@@ -45,6 +45,7 @@ class _StartPageState extends State<StartPage> with SingleTickerProviderStateMix
   @override
   Widget build(context){
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         drawer: Drawer(
           child: ListView(
