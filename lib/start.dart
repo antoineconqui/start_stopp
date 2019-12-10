@@ -11,24 +11,39 @@ class _StartPageState extends State<StartPage> with SingleTickerProviderStateMix
   static Color bleuC = Color(0xFF74b9ff);
   static Color bleuF = Color(0xFF4da6ff);
   Symptome _selectedSymptome;
+  bool _symptomesLoaded = false;
   
   List<bool> _checked;
-  List<Symptome> symptomesList = [
-    new Symptome('Douleurs au ventre', <Drug>[Drug('Vitamine C'),Drug('Vitamine D'),Drug('Vitamine E'),Drug('Vitamine F')]),
-    new Symptome('Chute de tension', <Drug>[Drug('Ketamine')]),
-  ];
-  List<Drug> _drugs = [];
-  Widget _widget = Text(
-        "Veuillez renseigner les symptômes du patient",
-        style: TextStyle(
-          fontSize: 22,
-          color: bleuF,
-        ),
-        textAlign: TextAlign.center,
+  List<Symptome> symptomesList = [];
+  List<String> _drugs = [];
+  Widget _widget = Column(
+    children: <Widget>[
+      Text("Chargement des symptômes"),
+      CircularProgressIndicator(),
+    ],
   );
 
   @override
-  Widget build(context) {
+  initState() {
+    super.initState();
+    getSymptomes().then((newSymptomesList){
+      setState(() {
+        symptomesList = newSymptomesList;
+        _widget = Text(
+          "Veuillez renseigner les symptômes du patient",
+          style: TextStyle(
+            fontSize: 22,
+            color: bleuF,
+          ),
+          textAlign: TextAlign.center,
+        );
+        _symptomesLoaded = true;
+      });
+    });
+  }
+
+  @override
+  Widget build(context){
     return MaterialApp(
       home: Scaffold(
         drawer: Drawer(
@@ -207,32 +222,38 @@ class _StartPageState extends State<StartPage> with SingleTickerProviderStateMix
     return Container(
       child: Column(
         children: <Widget>[
-          Center(
-            child: DropdownButtonHideUnderline(
-              child:  DropdownButton<Symptome>(
-                value: _selectedSymptome,
-                items: symptomesList.map((Symptome symptome) {
-                  return DropdownMenuItem<Symptome>(
-                    value: symptome,
-                    child: Center(child:Text(symptome.name)),
-                  );
-                }).toList(),
-                onChanged: (Symptome symptome) {
-                  setState(() {
-                    _selectedSymptome = symptome;
-                    _checked = List.filled(_selectedSymptome.drugsToGive.length, false);
-                    _drugs = symptome.drugsToGive;
-                  });
-                },
-                hint: Center(child:Text('Choisissez un symptôme')),
-                isExpanded: true,
-                // isDense: true,
+          Visibility(
+            visible: _symptomesLoaded,
+            child: Center(
+              child: DropdownButtonHideUnderline(
+                child:  DropdownButton<Symptome>(
+                  value: _selectedSymptome,
+                  items: symptomesList.map((Symptome symptome) {
+                    return DropdownMenuItem<Symptome>(
+                      value: symptome,
+                      child: Center(child:Text(symptome.name)),
+                    );
+                  }).toList(),
+                  onChanged: (Symptome symptome) {
+                    setState(() {
+                      _selectedSymptome = symptome;
+                      _checked = List.filled(_selectedSymptome.drugsToGive.length, false);
+                      _drugs = symptome.drugsToGive;
+                    });
+                  },
+                  hint: Center(child:Text('Choisissez un symptôme')),
+                  isExpanded: true,
+                  // isDense: true,
+                ),
               ),
             ),
           ),
-          Divider(
-            color: bleuF,
-            thickness: 2,
+          Visibility(
+            visible: _symptomesLoaded,
+            child: Divider(
+              color: bleuF,
+              thickness: 2,
+            ),
           ),
           _buildList(),
         ],
@@ -314,38 +335,38 @@ class _StartPageState extends State<StartPage> with SingleTickerProviderStateMix
           },
         ),
         title: Text(
-            drug.name,
+            drug,
             style: Theme.of(context).textTheme.body1,
             textAlign: TextAlign.left,
           ),
       );
   }
 
-
-  dialog(BuildContext context){
-    
+  Future<List<Symptome>> getSymptomes() async{
+    List<Symptome> symptomes = [];
+    QuerySnapshot snapshot = await Firestore.instance.collection('Catégories_start').getDocuments();
+    if(snapshot.documents.isNotEmpty){
+      for (var i = 0; i < snapshot.documents.length; i++) {
+        Symptome symptome = Symptome.fromMap(snapshot.documents[i].data);
+        List<String> drugsToGive = [];
+        for (var j = 0; j < symptome.references.length; j++) {
+          DocumentSnapshot drug = await symptome.references[j].get();
+          drugsToGive.add(drug.data['name']);
+        }
+        symptome.drugsToGive = drugsToGive;
+        symptomes.add(symptome);
+      }
+    }
+    return symptomes;  
   }
 
-  String eachfirstUpper(String string){
-    List<String> list = [];
-    string.split(' ').forEach((word) {
-      list.add(word[0].toUpperCase()+word.substring(1).toLowerCase());
-    });
-    return list.join(' ');
-  }
-}
-
-class Drug {
-  String name;
-
-  Drug(this.name);
-  Drug.fromMap(map) : name = map['name'];
 }
 
 class Symptome {
   String name;
-  List<Drug> drugsToGive;
+  List<dynamic> references;
+  List<String> drugsToGive;
 
   Symptome(this.name, this.drugsToGive);
-  Symptome.fromMap(map) : name = map['name'], drugsToGive = map['drugsToGive'];
+  Symptome.fromMap(map) : name = map['name'], references = map['drugs'];
 }

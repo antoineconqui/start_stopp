@@ -235,8 +235,7 @@ class _StoppPageState extends State<StoppPage> with SingleTickerProviderStateMix
                               _textDetected = await textDetector.detectFromPath(_image?.path);
                               _drugs = [];
                               try {
-                                List<Drug> drugs = await getDrugs
-                            ();
+                                List<Drug> drugs = await getDrugs();
                                 setState(() {
                                   _drugs = drugs;
                                   if(_drugs.length == 0)
